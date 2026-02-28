@@ -1,8 +1,31 @@
 import React from "react";
 import { motion } from "motion/react";
 import { FcGoogle } from "react-icons/fc";
+import { auth, provider } from "../utils/firebase";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import axios from "axios";
+import { serverUrl } from "../App";
 
 function Auth() {
+  const handleGoogleAuth = async () => {
+    try {
+      const response = await signInWithPopup(auth, provider);
+      const user = response.user;
+
+      const result = await axios.post(
+        serverUrl + "/api/auth/google",
+        {
+          name: user.displayName,
+          email: user.email,
+        },
+        { withCredentials: true },
+      );
+
+      console.log("Backend Response:", result.data);
+    } catch (error) {
+      console.error("REAL ERROR:", error.response?.data || error.message);
+    }
+  };
   return (
     <div className="min-h-screen overflow-hidden bg-white text-black px-8">
       <motion.header
@@ -52,6 +75,7 @@ items-center justify-between gap-16"
           </h1>
 
           <motion.button
+            onClick={handleGoogleAuth}
             whileHover={{
               y: -6,
               scale: 1.05,
